@@ -35,6 +35,7 @@ class WPPageOverrides {
     add_action( 'template_redirect', array( &$this, 'inject_override_ids') );
     add_filter( 'template_redirect', array( &$this, 'noindex_actual_page_urls' ) );
     add_filter( 'display_post_states', array( &$this, 'insert_post_states' ) );
+    register_deactivation_hook( __FILE__, array( &$this, 'deactivate' ) );
 	}
 
   public function insert_post_states($states) {
@@ -229,6 +230,18 @@ class WPPageOverrides {
     echo "<p class='description' id='wppageoverrides_{$object['name']}_id-description'>";
     echo sprintf(__("Override the default %s page with one that you've built in WordPress. Just select it here."), $object['label']);
     echo "</p>";
+  }
+
+  public function deactivate() {
+    if ( ! current_user_can( 'activate_plugins' ) )
+      return;
+    $plugin = isset( $_REQUEST['plugin'] ) ? $_REQUEST['plugin'] : '';
+    check_admin_referer( "deactivate-plugin_{$plugin}" );
+
+    global $wpdb;
+    $prepared_query = $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '%wppageoverrides_%');
+    $wpdb->get_results( $prepared_query );
+    return; 
   }
 
 }
