@@ -35,6 +35,10 @@ class WPPageOverrides {
     add_action( 'template_redirect', array( &$this, 'inject_override_ids') );
     add_filter( 'template_redirect', array( &$this, 'noindex_actual_page_urls' ) );
     add_filter( 'display_post_states', array( &$this, 'insert_post_states' ) );
+    if ( function_exists('get_field') ) {
+      add_filter( 'acf/location/rule_values/page_type', array( &$this, 'acf_add_page_types') );
+      add_filter( 'acf/location/rule_match/page_type', array( &$this, 'acf_match_page_types'), 5, 3 );
+    }
     register_deactivation_hook( __FILE__, array( &$this, 'deactivate' ) );
 	}
 
@@ -242,6 +246,39 @@ class WPPageOverrides {
     $prepared_query = $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '%wppageoverrides_%');
     $wpdb->get_results( $prepared_query );
     return;
+  }
+	
+  public function acf_match_page_types($match, $rule, $options){
+    global $post; global $wpdb;
+    if (empty($post->ID))
+      return false;
+
+    $prepared_query = $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s", sprintf("wppageoverrides_%s_id", $rule['value']));
+    $page_id = $wpdb->get_var( $prepared_query );
+
+    if($rule['operator'] == "=="){
+    	$match = ( $post->ID == $page_id );
+    }
+    elseif($rule['operator'] == "!="){
+    	$match = ( $post->ID  != $page_id );
+    }
+
+    return $match;
+  }
+
+  public function acf_add_page_types($choices){
+    $public_post_types = get_post_types( [
+      'public'   => true,
+      '_builtin' => false
+    ], 'objects' );
+
+    foreach ($public_post_types as $pt) {
+      $choices[$pt->name] = $pt->label.' '.__('Archive');
+    }
+
+    $choices['404'] = '404: Page not found';
+    $choices['search'] = 'Search results';
+    return $choices;
   }
 
 }
