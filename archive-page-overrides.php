@@ -41,7 +41,7 @@ class WPPageOverrides {
   public function insert_post_states($states) {
     global $post;
     if (!isset($post) || !isset($post->ID))
-      return;
+      return $states;
 
     $all_options = wp_load_alloptions();
     if (in_array($post->ID, $all_options)) {
@@ -56,7 +56,7 @@ class WPPageOverrides {
         default:
           preg_match( '/wppageoverrides_(.*)_id/', $key, $matches);
           if (empty($matches))
-            return;
+            return $states;
 
           $pt = get_post_type_object($matches[1]);
           $states[] = $pt->label.' '.__('page');
@@ -241,7 +241,7 @@ class WPPageOverrides {
     global $wpdb;
     $prepared_query = $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name LIKE %s", '%wppageoverrides_%');
     $wpdb->get_results( $prepared_query );
-    return; 
+    return;
   }
 
 }
