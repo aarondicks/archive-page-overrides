@@ -189,6 +189,7 @@ class WPPageOverrides {
      */
     $public_post_types = get_post_types( [
       'public'   => true,
+      'has_archive' => true,
       '_builtin' => false
     ], 'objects' );
 
@@ -247,7 +248,7 @@ class WPPageOverrides {
     $wpdb->get_results( $prepared_query );
     return;
   }
-	
+
   public function acf_match_page_types($match, $rule, $options){
     global $post; global $wpdb;
     if (empty($post->ID))
