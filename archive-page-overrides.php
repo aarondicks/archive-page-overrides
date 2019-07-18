@@ -32,8 +32,8 @@ class WPPageOverrides {
 	public function __construct() {
     add_filter( 'admin_init', array( &$this, 'register_setting_fields' ) );
     add_action( 'admin_notices', array( &$this, 'page_admin_notices' ) );
-    add_action( 'template_redirect', array( &$this, 'inject_override_ids') );
-    add_filter( 'template_redirect', array( &$this, 'noindex_actual_page_urls' ) );
+    add_action( 'template_redirect', array( &$this, 'inject_override_ids'), 20 );
+    add_filter( 'template_redirect', array( &$this, 'noindex_actual_page_urls' ), 10 );
     add_filter( 'display_post_states', array( &$this, 'insert_post_states' ) );
     if ( function_exists('get_field') ) {
       add_filter( 'acf/location/rule_values/page_type', array( &$this, 'acf_add_page_types') );
